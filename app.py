@@ -39,55 +39,65 @@ def load_deepfake_model():
 model = load_deepfake_model()
 
 # -------------------------------
-# 🔹 Premium Dark AI UI
+# 🔹 Premium Dark Theme
 # -------------------------------
-
-st.set_page_config(
-    page_title="Deepfake AI Detector",
-    page_icon="🧠",
-    layout="wide"
-)
+st.set_page_config(page_title="Deepfake AI Detector", layout="wide")
 
 st.markdown("""
 <style>
 .stApp {
-    background-color: #0f172a;
+    background-color: #0a0f1c;
     color: white;
 }
+
+/* Title */
 .main-title {
-    font-size: 44px;
-    font-weight: 800;
+    font-size: 46px;
+    font-weight: 900;
     text-align: center;
-    background: linear-gradient(90deg,#06b6d4,#3b82f6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: white;
+    margin-bottom: 10px;
 }
+
+/* Subtitle */
 .subtitle {
     text-align:center;
-    color:#94a3b8;
-    margin-bottom:30px;
+    color:#cbd5e1;
+    margin-bottom:40px;
+    font-size:18px;
 }
+
+/* Card */
 .card {
-    background: #1e293b;
-    padding: 25px;
-    border-radius: 16px;
-    box-shadow: 0px 10px 40px rgba(0,0,0,0.4);
+    background: #111827;
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0px 10px 40px rgba(0,0,0,0.6);
 }
+
+/* Result Text */
 .real-text {
-    font-size: 30px;
-    font-weight: 800;
-    color: #22c55e;
+    font-size: 34px;
+    font-weight: 900;
+    color: #00ff88;
 }
+
 .fake-text {
-    font-size: 30px;
-    font-weight: 800;
-    color: #ef4444;
+    font-size: 34px;
+    font-weight: 900;
+    color: #ff3b3b;
+}
+
+.confidence-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<div class='main-title'>🧠 Deepfake AI Detector</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>Neural Network Powered Image Authenticity System</div>", unsafe_allow_html=True)
+st.markdown("<div class='main-title'>🧠 Deepfake AI Detection System</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>AI-Powered Image Authenticity Verification</div>", unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader("Upload Face Image", type=["jpg", "jpeg", "png"])
 
@@ -98,15 +108,15 @@ if uploaded_file:
 
     col1, col2 = st.columns([1,1], gap="large")
 
-    # ---------------- LEFT SIDE ----------------
+    # ---------------- LEFT ----------------
     with col1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.image(image, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # ---------------- RIGHT SIDE ----------------
+    # ---------------- RIGHT ----------------
     with col2:
-        with st.spinner("Running AI Analysis..."):
+        with st.spinner("Running AI Model..."):
             img = image.resize(IMG_SIZE)
             img_array = np.array(img)
             img_array = preprocess_input(img_array)
@@ -119,7 +129,7 @@ if uploaded_file:
 
         st.markdown("<div class='card'>", unsafe_allow_html=True)
 
-        # Strong Result Display
+        # RESULT HEADER
         if label == "Real":
             st.markdown("<div class='real-text'>✅ AUTHENTIC IMAGE</div>", unsafe_allow_html=True)
         else:
@@ -127,49 +137,58 @@ if uploaded_file:
 
         st.write("")
 
-        st.markdown(f"### Confidence Score: {confidence*100:.2f}%")
+        # CONFIDENCE TEXT
+        st.markdown(
+            f"<div class='confidence-text'>Confidence Score: {confidence*100:.2f}%</div>",
+            unsafe_allow_html=True
+        )
+
         st.progress(float(confidence))
 
-        # ---------------- Donut Chart ----------------
+        st.write("")
+
+        # ---------------- DONUT CHART ----------------
         real_prob = float(prediction_val)
         fake_prob = float(1 - prediction_val)
 
         fig_donut = go.Figure(data=[go.Pie(
             labels=['Real', 'Fake'],
             values=[real_prob, fake_prob],
-            hole=.6,
-            marker=dict(colors=["#22c55e", "#ef4444"]),
-            textinfo='percent'
+            hole=.65,
+            marker=dict(colors=["#00ff88", "#ff3b3b"]),
+            textinfo='percent',
+            textfont=dict(size=18, color="white")
         )])
 
         fig_donut.update_layout(
-            paper_bgcolor="#1e293b",
-            plot_bgcolor="#1e293b",
-            font=dict(color="white"),
+            paper_bgcolor="#111827",
+            plot_bgcolor="#111827",
+            font=dict(color="white", size=16),
             showlegend=True,
-            height=300
+            height=320,
+            legend=dict(font=dict(color="white"))
         )
 
         st.plotly_chart(fig_donut, use_container_width=True)
 
-        # ---------------- Modern Gauge ----------------
-        gauge_color = "#22c55e" if label == "Real" else "#ef4444"
+        # ---------------- GAUGE ----------------
+        gauge_color = "#00ff88" if label == "Real" else "#ff3b3b"
 
         fig = go.Figure(go.Indicator(
             mode="gauge+number",
             value=confidence * 100,
-            number={'font': {'size': 40}},
-            title={'text': "Model Confidence (%)"},
+            number={'font': {'size': 50, 'color': "white"}},
+            title={'text': "Model Confidence (%)", 'font': {'size': 20, 'color': "white"}},
             gauge={
-                'axis': {'range': [0, 100]},
+                'axis': {'range': [0, 100], 'tickcolor': "white"},
                 'bar': {'color': gauge_color},
-                'bgcolor': "#1e293b",
+                'bgcolor': "#1f2937",
             }
         ))
 
         fig.update_layout(
-            height=300,
-            paper_bgcolor="#1e293b",
+            height=320,
+            paper_bgcolor="#111827",
             font={'color': "white"}
         )
 
