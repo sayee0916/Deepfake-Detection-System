@@ -39,86 +39,74 @@ def load_deepfake_model():
 model = load_deepfake_model()
 
 # -------------------------------
-# 🔹 Professional Clean UI
+# 🔹 Premium Dark AI UI
 # -------------------------------
 
 st.set_page_config(
-    page_title="Deepfake Detector",
+    page_title="Deepfake AI Detector",
     page_icon="🧠",
     layout="wide"
 )
 
-# Clean modern styling
 st.markdown("""
 <style>
 .stApp {
-    background-color: #f8fafc;
+    background-color: #0f172a;
+    color: white;
 }
-
-.header {
-    font-size: 40px;
-    font-weight: 700;
-    color: #111827;
+.main-title {
+    font-size: 44px;
+    font-weight: 800;
     text-align: center;
-    margin-bottom: 5px;
+    background: linear-gradient(90deg,#06b6d4,#3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
-
-.subheader {
-    text-align: center;
-    color: #6b7280;
-    margin-bottom: 30px;
+.subtitle {
+    text-align:center;
+    color:#94a3b8;
+    margin-bottom:30px;
 }
-
 .card {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0px 8px 25px rgba(0,0,0,0.06);
+    background: #1e293b;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0px 10px 40px rgba(0,0,0,0.4);
 }
-
-.result-real {
+.real-text {
     font-size: 30px;
-    font-weight: 700;
-    color: #16a34a;
+    font-weight: 800;
+    color: #22c55e;
 }
-
-.result-fake {
+.fake-text {
     font-size: 30px;
-    font-weight: 700;
-    color: #dc2626;
-}
-
-.conf-text {
-    font-size: 20px;
-    font-weight: 600;
-    color: #111827;
+    font-weight: 800;
+    color: #ef4444;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<div class='header'>🧠 Deepfake Face Detector</div>", unsafe_allow_html=True)
-st.markdown("<div class='subheader'>AI-powered image authenticity analysis using EfficientNet</div>", unsafe_allow_html=True)
+st.markdown("<div class='main-title'>🧠 Deepfake AI Detector</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>Neural Network Powered Image Authenticity System</div>", unsafe_allow_html=True)
 
-st.write("")
-
-uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Upload Face Image", type=["jpg", "jpeg", "png"])
 
 st.write("")
 
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
 
-    col1, col2 = st.columns([1, 1], gap="large")
+    col1, col2 = st.columns([1,1], gap="large")
 
-    # LEFT COLUMN - IMAGE
+    # ---------------- LEFT SIDE ----------------
     with col1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.image(image, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # RIGHT COLUMN - RESULTS
+    # ---------------- RIGHT SIDE ----------------
     with col2:
-        with st.spinner("Analyzing image..."):
+        with st.spinner("Running AI Analysis..."):
             img = image.resize(IMG_SIZE)
             img_array = np.array(img)
             img_array = preprocess_input(img_array)
@@ -131,63 +119,63 @@ if uploaded_file:
 
         st.markdown("<div class='card'>", unsafe_allow_html=True)
 
-        # Strong Result Text
+        # Strong Result Display
         if label == "Real":
-            st.markdown("<div class='result-real'>✅ REAL FACE DETECTED</div>", unsafe_allow_html=True)
+            st.markdown("<div class='real-text'>✅ AUTHENTIC IMAGE</div>", unsafe_allow_html=True)
         else:
-            st.markdown("<div class='result-fake'>⚠ FAKE / DEEPFAKE DETECTED</div>", unsafe_allow_html=True)
+            st.markdown("<div class='fake-text'>⚠ DEEPFAKE DETECTED</div>", unsafe_allow_html=True)
 
         st.write("")
 
-        st.markdown(f"<div class='conf-text'>Confidence: {confidence*100:.2f}%</div>", unsafe_allow_html=True)
+        st.markdown(f"### Confidence Score: {confidence*100:.2f}%")
         st.progress(float(confidence))
 
-        st.write("")
+        # ---------------- Donut Chart ----------------
+        real_prob = float(prediction_val)
+        fake_prob = float(1 - prediction_val)
 
-        # ---------------- Gauge ----------------
-        gauge_color = "#16a34a" if label == "Real" else "#dc2626"
+        fig_donut = go.Figure(data=[go.Pie(
+            labels=['Real', 'Fake'],
+            values=[real_prob, fake_prob],
+            hole=.6,
+            marker=dict(colors=["#22c55e", "#ef4444"]),
+            textinfo='percent'
+        )])
+
+        fig_donut.update_layout(
+            paper_bgcolor="#1e293b",
+            plot_bgcolor="#1e293b",
+            font=dict(color="white"),
+            showlegend=True,
+            height=300
+        )
+
+        st.plotly_chart(fig_donut, use_container_width=True)
+
+        # ---------------- Modern Gauge ----------------
+        gauge_color = "#22c55e" if label == "Real" else "#ef4444"
 
         fig = go.Figure(go.Indicator(
             mode="gauge+number",
             value=confidence * 100,
+            number={'font': {'size': 40}},
             title={'text': "Model Confidence (%)"},
             gauge={
                 'axis': {'range': [0, 100]},
                 'bar': {'color': gauge_color},
-                'bgcolor': "white",
-                'steps': [
-                    {'range': [0, 50], 'color': "#fee2e2"},
-                    {'range': [50, 75], 'color': "#fef3c7"},
-                    {'range': [75, 100], 'color': "#dcfce7"},
-                ],
+                'bgcolor': "#1e293b",
             }
         ))
 
         fig.update_layout(
-            height=320,
-            margin=dict(l=20, r=20, t=40, b=20),
-            paper_bgcolor="white",
-            font={'color': "#111827"}
+            height=300,
+            paper_bgcolor="#1e293b",
+            font={'color': "white"}
         )
 
         st.plotly_chart(fig, use_container_width=True)
 
-        st.write("")
-
-        # Breakdown
-        st.subheader("Prediction Breakdown")
-
-        real_prob = float(prediction_val)
-        fake_prob = float(1 - prediction_val)
-
-        st.bar_chart({
-            "Real": [real_prob],
-            "Fake": [fake_prob]
-        })
-
-        st.metric("Raw Model Score", f"{prediction_val:.4f}")
-
         st.markdown("</div>", unsafe_allow_html=True)
 
 else:
-    st.info("Upload an image to begin analysis.")
+    st.info("Upload an image to begin AI detection.")
