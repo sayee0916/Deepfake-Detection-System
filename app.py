@@ -39,12 +39,17 @@ def load_deepfake_model():
 model = load_deepfake_model()
 
 # -------------------------------
-# 🔹 Premium Dark Theme
+# 🔹 Page Setup
 # -------------------------------
 st.set_page_config(page_title="Deepfake AI Detector", layout="wide")
 
+# -------------------------------
+# 🔹 Premium Dark Styling
+# -------------------------------
 st.markdown("""
 <style>
+
+/* Main Background */
 .stApp {
     background-color: #0a0f1c;
     color: white;
@@ -93,12 +98,46 @@ st.markdown("""
     font-weight: 700;
     color: white;
 }
+
+/* -------- FILE UPLOADER FIX -------- */
+
+/* Upload Label */
+label[data-testid="stFileUploaderLabel"] {
+    color: white !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+}
+
+/* Drag Drop Box */
+[data-testid="stFileUploaderDropzone"] {
+    background-color: #1f2937 !important;
+    color: white !important;
+    border: 2px dashed #334155 !important;
+}
+
+/* Drag Drop Text */
+[data-testid="stFileUploaderDropzone"] div {
+    color: white !important;
+}
+
+/* Uploaded File Name */
+[data-testid="stFileUploaderFileName"] {
+    color: white !important;
+    font-weight: 500 !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
+# -------------------------------
+# 🔹 Header
+# -------------------------------
 st.markdown("<div class='main-title'>🧠 Deepfake AI Detection System</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>AI-Powered Image Authenticity Verification</div>", unsafe_allow_html=True)
 
+# -------------------------------
+# 🔹 Upload Section
+# -------------------------------
 uploaded_file = st.file_uploader("Upload Face Image", type=["jpg", "jpeg", "png"])
 
 st.write("")
@@ -108,13 +147,13 @@ if uploaded_file:
 
     col1, col2 = st.columns([1,1], gap="large")
 
-    # ---------------- LEFT ----------------
+    # ---------------- LEFT SIDE ----------------
     with col1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.image(image, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # ---------------- RIGHT ----------------
+    # ---------------- RIGHT SIDE ----------------
     with col2:
         with st.spinner("Running AI Model..."):
             img = image.resize(IMG_SIZE)
@@ -129,7 +168,7 @@ if uploaded_file:
 
         st.markdown("<div class='card'>", unsafe_allow_html=True)
 
-        # RESULT HEADER
+        # RESULT TEXT
         if label == "Real":
             st.markdown("<div class='real-text'>✅ AUTHENTIC IMAGE</div>", unsafe_allow_html=True)
         else:
@@ -144,7 +183,6 @@ if uploaded_file:
         )
 
         st.progress(float(confidence))
-
         st.write("")
 
         # ---------------- DONUT CHART ----------------
