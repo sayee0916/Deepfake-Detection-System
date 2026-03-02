@@ -6,6 +6,7 @@ from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras.applications.efficientnet import preprocess_input
 from tensorflow.keras.layers import GlobalAveragePooling2D, Dense
 from tensorflow.keras.models import Sequential
+import plotly.graph_objects as go
 
 # -------------------------------
 # 🔹 Configuration
@@ -15,69 +16,151 @@ MODEL_PATH = "deepfake_model.keras"
 
 @st.cache_resource
 def load_deepfake_model():
-    # 1. Build the base model
     base_model = EfficientNetB0(
-        weights=None, 
-        include_top=False, 
+        weights=None,
+        include_top=False,
         input_shape=(IMG_SIZE[0], IMG_SIZE[1], 3)
     )
-    
-    # 2. Rebuild architecture based on your error logs:
-    # The error (1280, 1) means it goes GAP -> Dense(1) 
-    # There is NO Dense(128) layer in your saved file.
+
     model = Sequential([
         base_model,
         GlobalAveragePooling2D(),
-        Dense(1, activation='sigmoid') # Changed from 128 to 1 to match your file
+        Dense(1, activation='sigmoid')
     ])
 
-    # 3. Load weights
     try:
-        # We use load_weights because load_model has a bug with EfficientNet in Keras 3
         model.load_weights(MODEL_PATH)
-    except Exception as e:
-        st.error(f"Architecture Mismatch: {e}")
-        st.info("Attempting fallback: loading full model directly...")
+    except Exception:
         return tf.keras.models.load_model(MODEL_PATH, compile=False)
-        
+
     return model
 
-# Initialize Model
+
 model = load_deepfake_model()
 
 # -------------------------------
-# 🔹 Streamlit Interface
+# 🔹 Advanced UI Styling
 # -------------------------------
-st.set_page_config(page_title="Deepfake Detector", layout="centered")
-st.title("🧠 Deepfake Face Detector")
 
-uploaded_file = st.file_uploader("Upload a face image", type=["jpg", "jpeg", "png"])
+st.set_page_config(
+    page_title="Deepfake AI Detector",
+    page_icon="🧠",
+    layout="wide"
+)
+
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(135deg, #141E30, #243B55);
+    color: white;
+}
+.big-title {
+    font-size: 50px;
+    font-weight: 800;
+    text-align: center;
+    background: -webkit-linear-gradient(#00C6FF, #0072FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.subtitle {
+    text-align:center;
+    font-size:18px;
+    opacity:0.8;
+    margin-bottom:30px;
+}
+.glass-card {
+    padding:25px;
+    border-radius:20px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.15);
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("<div class='big-title'>🧠 Deepfake AI Detector</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>Advanced Neural Network powered authenticity detection</div>", unsafe_allow_html=True)
+
+st.divider()
+
+uploaded_file = st.file_uploader("📤 Upload Face Image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_container_width=True)
 
-    with st.spinner("Analyzing..."):
-        # Preprocess
-        img = image.resize(IMG_SIZE)
-        img_array = np.array(img)
-        img_array = preprocess_input(img_array)
-        img_array = np.expand_dims(img_array, axis=0)
+    col1, col2 = st.columns([1, 1])
 
-        # Predict
-        # We use [0][0] because prediction comes back as a 2D array [[value]]
-        prediction_val = model.predict(img_array, verbose=0)[0][0]
-        
-        # Display Result
-        # Adjust threshold logic if needed (is 1 Real or 0 Real?)
-        label = "Real" if prediction_val > 0.5 else "Fake"
-        confidence = prediction_val if prediction_val > 0.5 else (1 - prediction_val)
+    # ---------------- LEFT SIDE ----------------
+    with col1:
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.image(image, caption="Uploaded Image", use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        st.divider()
-        color = "green" if label == "Real" else "red"
-        st.subheader(f"Result: :{color}[{label}]")
-        st.write(f"**Confidence Score:** {confidence*100:.2f}%")
+    # ---------------- RIGHT SIDE ----------------
+    with col2:
+        with st.spinner("🔍 Running AI Analysis..."):
+            img = image.resize(IMG_SIZE)
+            img_array = np.array(img)
+            img_array = preprocess_input(img_array)
+            img_array = np.expand_dims(img_array, axis=0)
+
+            prediction_val = model.predict(img_array, verbose=0)[0][0]
+
+            label = "Real" if prediction_val > 0.5 else "Fake"
+            confidence = prediction_val if prediction_val > 0.5 else (1 - prediction_val)
+
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+
+        # Result Badge
+        if label == "Real":
+            st.success("✅ Authentic Face Detected")
+        else:
+            st.error("⚠️ Deepfake Detected")
+
+        st.markdown(f"### 🎯 Confidence: {confidence*100:.2f}%")
         st.progress(float(confidence))
 
+        # ---------------- Gauge Chart ----------------
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=confidence * 100,
+            title={'text': "Model Confidence"},
+            gauge={
+                'axis': {'range': [0, 100]},
+                'bar': {'color': "lime" if label == "Real" else "red"},
+                'steps': [
+                    {'range': [0, 50], 'color': "#440000"},
+                    {'range': [50, 75], 'color': "#555500"},
+                    {'range': [75, 100], 'color': "#004400"},
+                ],
+            }
+        ))
+
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            font={'color': "white"}
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        # ---------------- Probability Breakdown ----------------
+        st.markdown("### 📊 Probability Breakdown")
+
+        real_prob = prediction_val
+        fake_prob = 1 - prediction_val
+
+        st.bar_chart({
+            "Real": [float(real_prob)],
+            "Fake": [float(fake_prob)]
+        })
+
+        # Raw Score
+        st.metric("Raw Model Score", f"{prediction_val:.4f}")
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
 else:
-    st.info("Waiting for image upload...")
+    st.info("👆 Upload an image to start AI detection")
+
+st.divider()
+st.caption("⚡ Powered by EfficientNetB0 • Built with TensorFlow & Streamlit")
