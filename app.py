@@ -101,8 +101,11 @@ st.markdown("""
 
 /* -------- FILE UPLOADER FIX -------- */
 
-/* Upload Label */
-label[data-testid="stFileUploaderLabel"] {
+/* Upload Label - force white on dark bg */
+[data-testid="stFileUploader"] label,
+[data-testid="stFileUploader"] label *,
+label[data-testid="stFileUploaderLabel"],
+label[data-testid="stFileUploaderLabel"] * {
     color: white !important;
     font-size: 18px !important;
     font-weight: 600 !important;
@@ -111,17 +114,35 @@ label[data-testid="stFileUploaderLabel"] {
 /* Drag Drop Box */
 [data-testid="stFileUploaderDropzone"] {
     background-color: #1f2937 !important;
-    color: white !important;
-    border: 2px dashed #334155 !important;
+    border: 2px dashed #4b6bfb !important;
 }
 
-/* Drag Drop Text */
-[data-testid="stFileUploaderDropzone"] div {
+/* ALL text inside dropzone */
+[data-testid="stFileUploaderDropzone"],
+[data-testid="stFileUploaderDropzone"] *,
+[data-testid="stFileUploaderDropzoneInstructions"],
+[data-testid="stFileUploaderDropzoneInstructions"] * {
+    color: white !important;
+}
+
+/* Browse Files Button */
+[data-testid="stFileUploaderDropzone"] button {
+    background-color: #4b6bfb !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 6px 18px !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+}
+
+[data-testid="stFileUploaderDropzone"] button * {
     color: white !important;
 }
 
 /* Uploaded File Name */
-[data-testid="stFileUploaderFileName"] {
+[data-testid="stFileUploaderFileName"],
+[data-testid="stFileUploaderFileName"] * {
     color: white !important;
     font-weight: 500 !important;
 }
