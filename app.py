@@ -46,7 +46,7 @@ st.set_page_config(page_title="Deepfake AI Detector", layout="wide")
 # -------------------------------
 # 🔹 Premium Dark Styling
 # -------------------------------
-st.markdown("""
+st.markdown(
 <style>
 
 /* Main Background */
@@ -127,7 +127,7 @@ label[data-testid="stFileUploaderLabel"] {
 }
 
 </style>
-""", unsafe_allow_html=True)
+, unsafe_allow_html=True)
 
 # -------------------------------
 # 🔹 Header
