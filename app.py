@@ -9,7 +9,7 @@ from tensorflow.keras.models import Sequential
 import plotly.graph_objects as go
 
 # -------------------------------
-# 🔹 Configuration
+# CONFIG
 # -------------------------------
 IMG_SIZE = (224, 224)
 MODEL_PATH = "deepfake_model.keras"
@@ -35,21 +35,20 @@ def load_deepfake_model():
 
     return model
 
-
 model = load_deepfake_model()
 
 # -------------------------------
-# 🔹 Page Setup
+# PAGE CONFIG
 # -------------------------------
 st.set_page_config(page_title="Deepfake AI Detector", layout="wide")
 
 # -------------------------------
-# 🔹 Premium Dark Styling
+# FORCE WHITE UPLOADER TEXT FIX
 # -------------------------------
 st.markdown("""
 <style>
 
-/* Main Background */
+/* App background */
 .stApp {
     background-color: #0a0f1c;
     color: white;
@@ -61,15 +60,13 @@ st.markdown("""
     font-weight: 900;
     text-align: center;
     color: white;
-    margin-bottom: 10px;
 }
 
 /* Subtitle */
 .subtitle {
-    text-align:center;
-    color:#cbd5e1;
-    margin-bottom:40px;
-    font-size:18px;
+    text-align: center;
+    color: #cbd5e1;
+    margin-bottom: 40px;
 }
 
 /* Card */
@@ -80,7 +77,37 @@ st.markdown("""
     box-shadow: 0px 10px 40px rgba(0,0,0,0.6);
 }
 
-/* Result Text */
+/* ---------------- UPLOADER COMPLETE FIX ---------------- */
+
+/* Upload label */
+section[data-testid="stFileUploader"] label {
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+/* Entire uploader container text */
+section[data-testid="stFileUploader"] * {
+    color: white !important;
+}
+
+/* Drag drop box */
+section[data-testid="stFileUploader"] div[role="button"] {
+    background-color: #1f2937 !important;
+    border: 2px dashed #334155 !important;
+}
+
+/* Uploaded file name */
+section[data-testid="stFileUploader"] span {
+    color: white !important;
+}
+
+/* Remove default muted color */
+section[data-testid="stFileUploader"] small {
+    color: #e5e7eb !important;
+}
+
+/* ---------------- RESULT STYLING ---------------- */
+
 .real-text {
     font-size: 34px;
     font-weight: 900;
@@ -99,44 +126,17 @@ st.markdown("""
     color: white;
 }
 
-/* -------- FILE UPLOADER FIX -------- */
-
-/* Upload Label */
-label[data-testid="stFileUploaderLabel"] {
-    color: white !important;
-    font-size: 18px !important;
-    font-weight: 600 !important;
-}
-
-/* Drag Drop Box */
-[data-testid="stFileUploaderDropzone"] {
-    background-color: #1f2937 !important;
-    color: white !important;
-    border: 2px dashed #334155 !important;
-}
-
-/* Drag Drop Text */
-[data-testid="stFileUploaderDropzone"] div {
-    color: white !important;
-}
-
-/* Uploaded File Name */
-[data-testid="stFileUploaderFileName"] {
-    color: white !important;
-    font-weight: 500 !important;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
 # -------------------------------
-# 🔹 Header
+# HEADER
 # -------------------------------
 st.markdown("<div class='main-title'>🧠 Deepfake AI Detection System</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>AI-Powered Image Authenticity Verification</div>", unsafe_allow_html=True)
 
 # -------------------------------
-# 🔹 Upload Section
+# FILE UPLOAD
 # -------------------------------
 uploaded_file = st.file_uploader("Upload Face Image", type=["jpg", "jpeg", "png"])
 
@@ -147,13 +147,11 @@ if uploaded_file:
 
     col1, col2 = st.columns([1,1], gap="large")
 
-    # ---------------- LEFT SIDE ----------------
     with col1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.image(image, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # ---------------- RIGHT SIDE ----------------
     with col2:
         with st.spinner("Running AI Model..."):
             img = image.resize(IMG_SIZE)
@@ -162,30 +160,24 @@ if uploaded_file:
             img_array = np.expand_dims(img_array, axis=0)
 
             prediction_val = model.predict(img_array, verbose=0)[0][0]
-
             label = "Real" if prediction_val > 0.5 else "Fake"
             confidence = prediction_val if prediction_val > 0.5 else (1 - prediction_val)
 
         st.markdown("<div class='card'>", unsafe_allow_html=True)
 
-        # RESULT TEXT
         if label == "Real":
             st.markdown("<div class='real-text'>✅ AUTHENTIC IMAGE</div>", unsafe_allow_html=True)
         else:
             st.markdown("<div class='fake-text'>⚠ DEEPFAKE DETECTED</div>", unsafe_allow_html=True)
 
-        st.write("")
-
-        # CONFIDENCE TEXT
         st.markdown(
             f"<div class='confidence-text'>Confidence Score: {confidence*100:.2f}%</div>",
             unsafe_allow_html=True
         )
 
         st.progress(float(confidence))
-        st.write("")
 
-        # ---------------- DONUT CHART ----------------
+        # Donut Chart
         real_prob = float(prediction_val)
         fake_prob = float(1 - prediction_val)
 
@@ -201,36 +193,11 @@ if uploaded_file:
         fig_donut.update_layout(
             paper_bgcolor="#111827",
             plot_bgcolor="#111827",
-            font=dict(color="white", size=16),
-            showlegend=True,
-            height=320,
-            legend=dict(font=dict(color="white"))
+            font=dict(color="white"),
+            height=320
         )
 
         st.plotly_chart(fig_donut, use_container_width=True)
-
-        # ---------------- GAUGE ----------------
-        gauge_color = "#00ff88" if label == "Real" else "#ff3b3b"
-
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=confidence * 100,
-            number={'font': {'size': 50, 'color': "white"}},
-            title={'text': "Model Confidence (%)", 'font': {'size': 20, 'color': "white"}},
-            gauge={
-                'axis': {'range': [0, 100], 'tickcolor': "white"},
-                'bar': {'color': gauge_color},
-                'bgcolor': "#1f2937",
-            }
-        ))
-
-        fig.update_layout(
-            height=320,
-            paper_bgcolor="#111827",
-            font={'color': "white"}
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
