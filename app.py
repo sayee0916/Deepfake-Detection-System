@@ -46,7 +46,7 @@ st.set_page_config(page_title="Deepfake AI Detector", layout="wide")
 # -------------------------------
 # 🔹 Premium Dark Styling
 # -------------------------------
-st.markdown(
+st.markdown("""
 <style>
 
 /* Main Background */
@@ -127,7 +127,7 @@ label[data-testid="stFileUploaderLabel"] {
 }
 
 </style>
-, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # -------------------------------
 # 🔹 Header
@@ -145,7 +145,7 @@ st.write("")
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
 
-    col1, col2 = st.columns([1,1], gap="large")
+    col1, col2 = st.columns([1, 1], gap="large")
 
     # ---------------- LEFT SIDE ----------------
     with col1:
