@@ -217,5 +217,6 @@ The model successfully learned visual patterns that help distinguish between rea
 # Author
 
 **Sayali Sanjay Chidrawar**
+
 Domain: Computer Vision | Deep Learning
 
